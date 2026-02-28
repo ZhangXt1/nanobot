@@ -20,3 +20,9 @@ poetry.lock
 .pytest_cache/
 botpy.log
 tests/
+.minimax/
+.history/
+.workspace/
+Lib/
+Scripts/
+pyvenv.cfg
