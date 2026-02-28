@@ -16,6 +16,8 @@ from nanobot.agent.memory import MemoryStore
 from nanobot.agent.subagent import SubagentManager
 from nanobot.agent.tools.cron import CronTool
 from nanobot.agent.tools.filesystem import EditFileTool, ListDirTool, ReadFileTool, WriteFileTool
+from nanobot.agent.tools.camera import CameraTool
+from nanobot.agent.tools.desktop import DesktopTool
 from nanobot.agent.tools.message import MessageTool
 from nanobot.agent.tools.registry import ToolRegistry
 from nanobot.agent.tools.shell import ExecTool
@@ -126,6 +128,10 @@ class AgentLoop:
         # Register email tool if email channel is configured
         if self.channels_config and self.channels_config.email.enabled:
             self.tools.register(EmailTool())
+        # Register camera tool
+        self.tools.register(CameraTool(workspace=self.workspace))
+        # Register desktop tool
+        self.tools.register(DesktopTool(workspace=self.workspace))
 
     async def _connect_mcp(self) -> None:
         """Connect to configured MCP servers (one-time, lazy)."""
