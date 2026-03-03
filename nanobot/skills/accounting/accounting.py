@@ -49,7 +49,10 @@ def _save_json(file_path: Path, data: Any):
 
 def _load_records() -> List[Dict]:
     """加载收支记录"""
-    return _load_json(RECORDS_FILE, [])
+    data = _load_json(RECORDS_FILE, [])
+    if isinstance(data, dict):
+        return data.get("records", [])
+    return data if isinstance(data, list) else []
 
 
 def _save_records(records: List[Dict]):

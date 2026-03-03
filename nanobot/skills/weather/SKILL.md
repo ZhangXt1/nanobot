@@ -1,49 +1,71 @@
 ---
 name: weather
-description: Get current weather and forecasts (no API key required).
-homepage: https://wttr.in/:help
-metadata: {"nanobot":{"emoji":"🌤️","requires":{"bins":["curl"]}}}
+description: Get current weather and forecasts from Moji Weather (no API key required).
+homepage: http://tianqi.moji.com/
+metadata: {"nanobot":{"emoji":"🌤️","requires":{"bins":["curl","grep","sed"]}}}
 ---
 
 # Weather
 
-Two free services, no API keys needed.
+Get weather information from Moji Weather (墨迹天气), no API keys needed.
 
-## wttr.in (primary)
+## Moji Weather (primary)
 
-Quick one-liner:
+### Get weather for a city
+
+Format: `http://tianqi.moji.com/weather/china/<province>/<city>`
+
+### Bash Commands
+Example for Shanghai:
 ```bash
-curl -s "wttr.in/London?format=3"
-# Output: London: ⛅️ +8°C
+# Get current weather
+curl -s "http://tianqi.moji.com/weather/china/shanghai" | grep -oP '(?<=class="wea_weather">).*?(?=</div>)' | head -1
+# Output: 晴
+
+# Get current temperature
+curl -s "http://tianqi.moji.com/weather/china/shanghai" | grep -oP '(?<=class="wea_temperature"><em>).*?(?=</em>)'
+# Output: 15
+
+# Get weather description
+curl -s "http://tianqi.moji.com/weather/china/shanghai" | grep -oP '(?<=class="wea_about">).*?(?=</div>)' | head -1 | sed 's/\s\+//g'
+# Output: 空气优湿度：45%
+
+# Get full forecast
+curl -s "http://tianqi.moji.com/weather/china/shanghai" | grep -A 10 -B 2 "class=\"forecast\""
 ```
 
-Compact format:
-```bash
-curl -s "wttr.in/London?format=%l:+%c+%t+%h+%w"
-# Output: London: ⛅️ +8°C 71% ↙5km/h
+### PowerShell Commands
+Example for Shanghai:
+```powershell
+# Get weather page content
+$content = Invoke-WebRequest -Uri "http://tianqi.moji.com/weather/china/shanghai" -UseBasicParsing
+
+# Extract weather information using simple string operations
+# Note: This method may need adjustment if the page structure changes
+$content.Content | Select-String -Pattern "<div class=\"wea_weather\">.*?</div>" -AllMatches | ForEach-Object { $_.Matches.Value -replace '<[^>]+>', '' }
+
+# Extract temperature information
+$content.Content | Select-String -Pattern "<div class=\"wea_temperature\"><em>.*?</em>" -AllMatches | ForEach-Object { $_.Matches.Value -replace '<[^>]+>', '' }
+
+# Extract weather description
+$content.Content | Select-String -Pattern "<div class=\"wea_about\">.*?</div>" -AllMatches | ForEach-Object { $_.Matches.Value -replace '<[^>]+>', '' }
+
+# Get full page content for detailed analysis
+$content.Content
 ```
 
-Full forecast:
+### Tips:
+- Replace `<province>` and `<city>` with the actual province and city names in Chinese
+- Use URL-encoded city names if they contain spaces
+- The output may require additional parsing depending on the specific information needed
+- For more detailed weather information, you can scrape additional elements from the page
+- Use Bash commands on Linux/macOS and PowerShell commands on Windows
+
+## Fallback: wttr.in
+
+If Moji Weather is unavailable, you can use wttr.in as a fallback:
+
 ```bash
-curl -s "wttr.in/London?T"
+curl -s "wttr.in/<city>?format=3"
+# Output: <city>: ⛅️ +8°C
 ```
-
-Format codes: `%c` condition · `%t` temp · `%h` humidity · `%w` wind · `%l` location · `%m` moon
-
-Tips:
-- URL-encode spaces: `wttr.in/New+York`
-- Airport codes: `wttr.in/JFK`
-- Units: `?m` (metric) `?u` (USCS)
-- Today only: `?1` · Current only: `?0`
-- PNG: `curl -s "wttr.in/Berlin.png" -o /tmp/weather.png`
-
-## Open-Meteo (fallback, JSON)
-
-Free, no key, good for programmatic use:
-```bash
-curl -s "https://api.open-meteo.com/v1/forecast?latitude=51.5&longitude=-0.12&current_weather=true"
-```
-
-Find coordinates for a city, then query. Returns JSON with temp, windspeed, weathercode.
-
-Docs: https://open-meteo.com/en/docs
