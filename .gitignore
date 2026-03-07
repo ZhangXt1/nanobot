@@ -1,3 +1,4 @@
+.worktrees/
 .assets
 .env
 *.pyc
@@ -26,3 +27,4 @@ tests/
 Lib/
 Scripts/
 pyvenv.cfg
+.agent/
